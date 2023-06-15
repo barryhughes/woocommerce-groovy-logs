@@ -4,10 +4,9 @@ namespace WooCommerce_Groovy_Logs;
 
 use Exception;
 use SQLite3;
-use WC_Log_Handler;
 use WC_Log_Handler_Interface;
 
-class SQLite_Logger extends WC_Log_Handler implements WC_Log_Handler_Interface {
+class SQLite_Logger implements WC_Log_Handler_Interface {
 	/**
 	 * Name of the main logging table.
 	 */
@@ -49,7 +48,6 @@ class SQLite_Logger extends WC_Log_Handler implements WC_Log_Handler_Interface {
 		$table = self::LOG_TABLE;
 
 		if ( ! $this->ensure_setup() ) {
-			error_log( 'SQLite handler was unable to initialize.' );
 			return false;
 		}
 
@@ -120,5 +118,47 @@ class SQLite_Logger extends WC_Log_Handler implements WC_Log_Handler_Interface {
 
 	private function encode_level( string $level ): int {
 		return array_key_exists( $level, self::LEVELS ) ? self::LEVELS[ $level ] : self::LEVELS['debug'];
+	}
+
+	/**
+	 * @todo implement more complex searches
+	 * @todo establish this method as part of a common interface
+	 *
+	 * @param int        $page
+	 * @param int        $per_page
+	 * @param array|int  $levels
+	 * @param string|int $time
+	 * @param string     $search
+	 *
+	 * @return Log_Record[]
+	 */
+	public function fetch( int $page = 1, int $per_page = 50, $levels = 'all', $time = '', string $search = '' ): array {
+		$records = [];
+		$table   = self::LOG_TABLE;
+
+		if ( ! $this->ensure_setup() ) {
+			return [];
+		}
+
+		$statement = $this->database->prepare( "
+			SELECT *
+			FROM   $table
+			LIMIT  :limit
+			OFFSET :offset
+		" );
+
+		$statement->bindValue( ':limit', absint( $per_page ), SQLITE3_INTEGER );
+		$statement->bindValue( ':offset', $page * $per_page - $per_page, SQLITE3_INTEGER );
+		$result = $statement->execute();
+
+		if ( ! $result ) {
+			return [];
+		}
+
+		while ( $row = $result->fetchArray( SQLITE3_ASSOC ) ) {
+			$records[] = new Log_Record( $row['id'], $row['timestamp'], $row['level'], $row['message'], $row['context'] );
+		}
+
+		return $records;
 	}
 }
