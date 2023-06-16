@@ -163,11 +163,16 @@ class SQLite_Logger implements WC_Log_Handler_Interface {
 		}
 
 		$statement = $this->database->prepare( "
-			SELECT *
-			FROM   $table
-			LIMIT  :limit
-			OFFSET :offset
+			SELECT   *
+			FROM     $table
+			ORDER BY timestamp DESC
+			LIMIT    :limit
+			OFFSET   :offset
 		" );
+
+		if ( ! $statement ) {
+			return [];
+		}
 
 		$statement->bindValue( ':limit', absint( $per_page ), SQLITE3_INTEGER );
 		$statement->bindValue( ':offset', $page * $per_page - $per_page, SQLITE3_INTEGER );
@@ -178,7 +183,7 @@ class SQLite_Logger implements WC_Log_Handler_Interface {
 		}
 
 		while ( $row = $result->fetchArray( SQLITE3_ASSOC ) ) {
-			$records[] = new Log_Record( $row['id'], $row['timestamp'], $row['level'], $row['message'], $row['context'] );
+			$records[] = new Log_Record( ...$row );
 		}
 
 		return $records;
