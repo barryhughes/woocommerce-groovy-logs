@@ -16,7 +16,7 @@ class SQLite_Logger implements WC_Log_Handler_Interface {
 	 * Supported logging levels. Each is mapped to an integer. If an unknown or unsupported level is passed to the
 	 * handler, it will treat it as a debug-level error.
 	 */
-	private const LEVELS = [
+	public const LEVELS = [
 		'debug'     => 0,
 		'info'      => 1,
 		'notice'    => 2,
@@ -33,6 +33,11 @@ class SQLite_Logger implements WC_Log_Handler_Interface {
 	 * @var SQLite3
 	 */
 	private $database;
+
+	/**
+	 * @var string
+	 */
+	private $log_path;
 
 	/**
 	 * Handle a log entry.
@@ -78,7 +83,14 @@ class SQLite_Logger implements WC_Log_Handler_Interface {
 		}
 
 		try {
-			$this->database = new SQLite3( $this->log_path() );
+			$log_path = $this->get_log_path();
+			$log_dir  = dirname( $log_path );
+
+			if ( ! file_exists( $log_dir ) ) {
+				mkdir( dirname( $log_path ), 0777, true );
+			}
+
+			$this->database = new SQLite3( $log_path );
 			$this->ensure_schema();
 			return true;
 		} catch ( Exception $e ) {
@@ -108,12 +120,22 @@ class SQLite_Logger implements WC_Log_Handler_Interface {
 		}
 	}
 
-	private function log_path(): string {
-		if ( ! defined( 'WC_LOG_DIR' ) ) {
-			throw new Exception( 'SQLite logger cannot initialize, as WC_LOG_DIR is not defined' );
+	public function set_log_path( string $path = '' ): void {
+		if ( ! empty( $path ) ) {
+			$this->log_path = $path;
+		} elseif ( defined( 'WC_LOG_DIR' ) ) {
+			$this->log_path = trailingslashit( WC_LOG_DIR ) . '/log.db.php';
+		} else {
+			$this->log_path = sys_get_temp_dir() . '/woocommerce-groovy-logs/log.db.php';
+		}
+	}
+
+	private function get_log_path(): string {
+		if ( empty( $this->log_path ) ) {
+			$this->set_log_path();
 		}
 
-		return trailingslashit( WC_LOG_DIR ) . 'log.db.php';
+		return $this->log_path;
 	}
 
 	private function encode_level( string $level ): int {

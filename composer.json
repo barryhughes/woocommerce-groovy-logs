@@ -1,0 +1,18 @@
+{
+    "autoload": {
+        "psr-4": {
+            "WooCommerce_Groovy_Logs\\": "php/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "require-dev": {
+        "pestphp/pest": "^2.7"
+    },
+    "scripts": {
+        "test": "pest"
+    }
+}
