@@ -10,9 +10,6 @@
 
 namespace WooCommerce_Groovy_Logs;
 
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
-
 function class_loader( string $class ) {
 	$namespace = __NAMESPACE__ . '\\';
 
@@ -23,7 +20,7 @@ function class_loader( string $class ) {
 	$class = str_replace( $namespace, '', $class );
 	$path = realpath( __DIR__ . '/php/' . str_replace( '\\', '/', $class ) . '.php' );
 
-	if ( 0 !== strpos( $path, __DIR__ . '/php' ) ) {
+	if ( 0 !== strpos( $path, __DIR__ . '/php' ) || ! file_exists( $path ) ) {
 		return;
 	}
 
