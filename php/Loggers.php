@@ -8,7 +8,7 @@ use WC_Log_Handler_Email;
 use WC_Log_Handler_File;
 
 class Loggers {
-	private $available = [];
+	private array $available = [];
 
 	public function setup(): void {
 		$this->set_available_loggers();
@@ -72,7 +72,7 @@ class Loggers {
 		$defined_handler = get_option( 'groovy_logs_logging_engine', false );
 
 		return is_string( $defined_handler ) && isset( $this->available[ $defined_handler ] )
-			? $selected_logging_class = $this->available[ $defined_handler ][0]
+			? $this->available[ $defined_handler ][0]
 			: '';
 	}
 }

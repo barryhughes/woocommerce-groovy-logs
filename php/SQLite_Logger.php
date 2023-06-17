@@ -32,12 +32,12 @@ class SQLite_Logger implements WC_Log_Handler_Interface {
 	 *
 	 * @var SQLite3
 	 */
-	private $database;
+	private ?SQLite3 $database = null;
 
 	/**
 	 * @var string
 	 */
-	private $log_path;
+	private string $log_path;
 
 	/**
 	 * Handle a log entry.

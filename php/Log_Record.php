@@ -9,12 +9,6 @@ namespace WooCommerce_Groovy_Logs;
  * @property-read mixed  $context
  */
 class Log_Record {
-	private $id;
-	private $timestamp;
-	private $level;
-	private $message;
-	private $context;
-
 	/**
 	 * @param int                 $id
 	 * @param int                 $timestamp
@@ -22,14 +16,12 @@ class Log_Record {
 	 * @param string              $message
 	 * @param string|array|object $context
 	 */
-	public function __construct( int $id, int $timestamp, int $level, string $message, $context ) {
-		$this->id        = $id;
-		$this->timestamp = $timestamp;
-		$this->level     = $level;
-		$this->message   = $message;
-		$this->context   = $context;
-	}
-
+	public function __construct(
+		private int $id,
+		private int $timestamp,
+		private int $level,
+		private string $message,
+		private $context ) {}
 
 	public function __get( $key ) {
 		return isset( $this->$key ) ? $this->$key : null;

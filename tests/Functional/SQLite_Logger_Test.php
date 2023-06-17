@@ -60,7 +60,6 @@ test( 'It is possible to retrieve specific levels.', function () {
 	$error_logs = $logger->fetch( level: 'error' );
 	$info_emergency_logs = $logger->fetch( level: [ 'info', 'emergency' ] );
 
-
 	expect( $info_logs )->toHaveCount( 1 );
 	expect( $error_logs )->toHaveCount( 1 );
 	expect( $info_emergency_logs )->toHaveCount( 2 );
