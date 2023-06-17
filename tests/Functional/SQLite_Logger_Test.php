@@ -28,7 +28,7 @@ test( 'Basic logging functionality.', function () {
 	);
 } );
 
-test( 'On retrieval, logs are ordered oldest first.', function () {
+test( 'By default, logs are ordered youngest (most recent) first.', function () {
 	$logger       = get_sqlite_logger();
 	$relative_age = [
 		'3rd' => 1000,
