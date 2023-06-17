@@ -146,25 +146,34 @@ class SQLite_Logger implements WC_Log_Handler_Interface {
 	 * @todo implement more complex searches
 	 * @todo establish this method as part of a common interface
 	 *
-	 * @param int        $page
-	 * @param int        $per_page
-	 * @param array|int  $levels
-	 * @param string|int $time
-	 * @param string     $search
+	 * @param int          $page
+	 * @param int          $per_page
+	 * @param string|array $level
+	 * @param string|int   $time
+	 * @param string       $search
 	 *
 	 * @return Log_Record[]
 	 */
-	public function fetch( int $page = 1, int $per_page = 50, $levels = 'all', $time = '', string $search = '' ): array {
-		$records = [];
-		$table   = self::LOG_TABLE;
+	public function fetch( int $page = 1, int $per_page = 50, $level = 'all', $time = '', string $search = '' ): array {
+		$records   = [];
+		$table     = self::LOG_TABLE;
+		$where     = [];
+		$where_sql = '';
 
 		if ( ! $this->ensure_setup() ) {
 			return [];
 		}
 
+		$where[] = $this->levels_clause( (array) $level );
+
+		if ( ! empty( $where ) ) {
+			$where_sql = join( ' AND ', $where );
+		}
+
 		$statement = $this->database->prepare( "
 			SELECT   *
 			FROM     $table
+			$where_sql
 			ORDER BY timestamp DESC
 			LIMIT    :limit
 			OFFSET   :offset
@@ -187,5 +196,25 @@ class SQLite_Logger implements WC_Log_Handler_Interface {
 		}
 
 		return $records;
+	}
+
+	private function levels_clause( array $levels ): string {
+		$level_codes = [];
+
+		if ( $levels === [ 'all' ] ) {
+			return '';
+		}
+
+		foreach ( $levels as $level ) {
+			if ( ! isset( self::LEVELS[ $level ] ) ) {
+				throw new Exception( 'Valid log levels must be specified, or else specify "all".' );
+			}
+
+			if ( ! in_array( self::LEVELS[ $level ], $level_codes ) ) {
+				$level_codes[] = '"' . self::LEVELS[ $level ] . '"';
+			}
+		}
+
+		return 'WHERE level IN ( ' . join( ', ', $level_codes ) . ')';
 	}
 }

@@ -47,3 +47,32 @@ test( 'By default, logs are ordered youngest (most recent) first.', function () 
 	expect( $logs[0]->message )->toEqual( '1st', 'By default, the youngest log should be the first one we retrieve.' );
 	expect( $logs[5]->message )->toEqual( '6th', 'By default, the oldest log should be the last one we retrieve.' );
 } );
+
+test( 'It is possible to retrieve specific levels.', function () {
+	$logger = get_sqlite_logger();
+	$time   = time();
+
+	$logger->handle( $time - 10, 'info',      'Business as usual.', [] );
+	$logger->handle( $time - 11, 'error',     'An error occurred.', [] );
+	$logger->handle( $time - 12, 'emergency', 'Paging Dr Beat, emergency.', [] );
+
+	$info_logs  = $logger->fetch( level: 'info' );
+	$error_logs = $logger->fetch( level: 'error' );
+	$info_emergency_logs = $logger->fetch( level: [ 'info', 'emergency' ] );
+
+
+	expect( $info_logs )->toHaveCount( 1 );
+	expect( $error_logs )->toHaveCount( 1 );
+	expect( $info_emergency_logs )->toHaveCount( 2 );
+
+	expect( $info_logs[0]->message )->toEqual( 'Business as usual.' );
+	expect( $info_emergency_logs[1]->message )->toEqual( 'Paging Dr Beat, emergency.' );
+} );
+
+test( 'Invalid levels are rejected.', function() {
+	get_sqlite_logger()->fetch( level: 'tennis' );
+} )->expectException( Exception::class );
+
+test( 'Given a mix of valid and invalid levels, the query will be rejected.', function () {
+	get_sqlite_logger()->fetch( level: [ 'info', 'debug', 'tennis' ] );
+} )->expectException( Exception::class );
