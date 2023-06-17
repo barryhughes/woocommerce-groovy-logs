@@ -12,6 +12,7 @@ class Loggers {
 
 	public function setup(): void {
 		$this->set_available_loggers();
+		add_filter( 'jetpack_constant_default_value', [ $this, 'set_logger_constant' ], 10, 2 );
 		add_filter( 'woocommerce_register_log_handlers', [ $this, 'define_handlers' ], 20 );
 	}
 
@@ -48,17 +49,30 @@ class Loggers {
 		);
 	}
 
-	public function define_handlers( array $handlers ): array {
-		$defined_handler = get_option( 'groovy_logs_logging_engine', false );
-
-		if ( is_string( $defined_handler ) && isset( $this->available[ $defined_handler ] ) ) {
-			$selected_logging_class = $this->available[ $defined_handler ][0];
+	public function set_logger_constant( $value, string $name ) {
+		if ( $name !== 'WC_LOG_HANDLER' ) {
+			return $value;
 		}
 
-		if ( isset( $selected_logging_class ) && class_exists( $selected_logging_class ) ) {
-			return [ new ( $selected_logging_class ) ];
+		$active_handler = $this->get_active_logger_class();
+		return class_exists( $active_handler ) ? $active_handler : $value;
+	}
+
+	public function define_handlers( array $handlers ): array {
+		$active_handler = $this->get_active_logger_class();
+
+		if ( class_exists( $active_handler ) ) {
+			return [ new ( $active_handler ) ];
 		}
 
 		return $handlers;
+	}
+
+	private function get_active_logger_class(): string {
+		$defined_handler = get_option( 'groovy_logs_logging_engine', false );
+
+		return is_string( $defined_handler ) && isset( $this->available[ $defined_handler ] )
+			? $selected_logging_class = $this->available[ $defined_handler ][0]
+			: '';
 	}
 }
