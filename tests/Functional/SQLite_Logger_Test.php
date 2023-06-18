@@ -98,3 +98,18 @@ test( 'Log entries before, after or exactly at a specific timestamp can be fetch
 	expect( $youngest_two[0]->timestamp )->toEqual( $time - 100 );
 	expect( $youngest_two[1]->timestamp )->toEqual( $time - 200 );
 } );
+
+test( 'Logs can be searched by keyword.', function () {
+	$logger = get_sqlite_logger();
+	$time   = time();
+
+	$logger->handle( $time, 'debug', 'Foo bar', [] );
+	$logger->handle( $time, 'debug', 'Bar baz', [] );
+
+	$search_foo = $logger->fetch( search: 'foo' );
+	$search_bar = $logger->fetch( search: 'bar' );
+	
+	expect( $search_foo )->toHaveCount( 1 );
+	expect( $search_bar )->toHaveCount( 2 );
+} );
+

@@ -2,6 +2,7 @@
 
 namespace WooCommerce_Groovy_Logs;
 
+use Automattic\WooCommerce\Admin\API\Reports\SqlQuery;
 use Exception;
 use SQLite3;
 use WC_Log_Handler_Interface;
@@ -166,6 +167,7 @@ class SQLite_Logger implements WC_Log_Handler_Interface {
 
 		$where[] = $this->levels_clause( (array) $level );
 		$where[] = $this->time_clause( $timestamp );
+		$where[] = $this->search_clause( $search );
 		$where   = array_filter( $where );
 
 		if ( ! empty( $where ) ) {
@@ -242,5 +244,14 @@ class SQLite_Logger implements WC_Log_Handler_Interface {
 		}
 
 		return 'timestamp ' . $matches[1] . ' "' . $matches[2] . '"';
+	}
+
+	private function search_clause( string $term ): string {
+		if ( empty( $term ) ) {
+			return '';
+		}
+
+		$sanitized = SQLite3::escapeString( $term );
+		return "message LIKE '%$term%' OR context LIKE '%$term%'";	
 	}
 }
