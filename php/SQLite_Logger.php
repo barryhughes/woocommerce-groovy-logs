@@ -225,14 +225,13 @@ class SQLite_Logger implements WC_Log_Handler_Interface {
 			return '';
 		}
 
-		// We should end up with either 1 or 2 matches, since the first group is optional.
-		if ( ! preg_match( '/([<>=]+)?\s?([0-9]+)/', $timestamp, $matches ) ) {
+		if ( ! preg_match( '/([<>=]+)?\s?([0-9]+)/', $timestamp, $matches ) || count( $matches ) !== 3 ) {
 			throw new Exception( 'Illegal timestamp query string: "' . $timestamp . '".' );
 		}
 
-		// 1 match means an exact timestamp was provided (ex: "1324567").
-		if ( count( $matches ) === 2 ) {
-			return 'timestamp = "' . $matches[1] . '"';
+		// Precise timestamp provided?
+		if ( $matches[1] === '' ) {
+			return 'timestamp = "' . $matches[2] . '"';
 		}
 
 		// Otherwise, we have a relative timestamp (ex: ">= 2345678").

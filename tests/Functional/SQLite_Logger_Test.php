@@ -84,8 +84,17 @@ test( 'Log entries before, after or exactly at a specific timestamp can be fetch
 	$logger->handle( $time - 200, 'debug',    'An interesting detail.', [] );
 	$logger->handle( $time - 400, 'critical', 'Rather important.', [] );
 
-	$oldest_two = $logger->fetch( timestamp: '<=' . $time-200 );
+	$oldest_two = $logger->fetch( timestamp: '<=' . $time - 200 );
 	expect( $oldest_two )->toHaveCount( 2 );
 	expect( $oldest_two[0]->timestamp )->toEqual( $time - 200 );
 	expect( $oldest_two[1]->timestamp )->toEqual( $time - 400 );
+
+	$precise = $logger->fetch( timestamp: $time - 100 );
+	expect( $precise )->toHaveCount( 1 );
+	expect( $precise[0]->timestamp )->toEqual( $time - 100 );
+
+	$youngest_two = $logger->fetch( timestamp: '>' . $time - 400 );
+	expect( $youngest_two )->toHaveCount( 2 );
+	expect( $youngest_two[0]->timestamp )->toEqual( $time - 100 );
+	expect( $youngest_two[1]->timestamp )->toEqual( $time - 200 );
 } );
