@@ -149,12 +149,12 @@ class SQLite_Logger implements WC_Log_Handler_Interface {
 	 * @param int          $page
 	 * @param int          $per_page
 	 * @param string|array $level
-	 * @param string|int   $time
+	 * @param string|int   $timestamp
 	 * @param string       $search
 	 *
 	 * @return Log_Record[]
 	 */
-	public function fetch( int $page = 1, int $per_page = 50, $level = 'all', $time = '', string $search = '' ): array {
+	public function fetch( int $page = 1, int $per_page = 50, $level = 'all', $timestamp = '', string $search = '' ): array {
 		$records   = [];
 		$table     = self::LOG_TABLE;
 		$where     = [];
@@ -165,9 +165,11 @@ class SQLite_Logger implements WC_Log_Handler_Interface {
 		}
 
 		$where[] = $this->levels_clause( (array) $level );
+		$where[] = $this->time_clause( $timestamp );
+		$where   = array_filter( $where );
 
 		if ( ! empty( $where ) ) {
-			$where_sql = join( ' AND ', $where );
+			$where_sql = 'WHERE ' . join( ' AND ', $where );
 		}
 
 		$statement = $this->database->prepare( "
@@ -215,6 +217,31 @@ class SQLite_Logger implements WC_Log_Handler_Interface {
 			}
 		}
 
-		return 'WHERE level IN ( ' . join( ', ', $level_codes ) . ')';
+		return 'level IN ( ' . join( ', ', $level_codes ) . ')';
+	}
+
+	private function time_clause( string $timestamp ): string {
+		if ( empty( $timestamp ) ) {
+			return '';
+		}
+
+		// We should end up with either 1 or 2 matches, since the first group is optional.
+		if ( ! preg_match( '/([<>=]+)?\s?([0-9]+)/', $timestamp, $matches ) ) {
+			throw new Exception( 'Illegal timestamp query string: "' . $timestamp . '".' );
+		}
+
+		// 1 match means an exact timestamp was provided (ex: "1324567").
+		if ( count( $matches ) === 2 ) {
+			return 'timestamp = "' . $matches[1] . '"';
+		}
+
+		// Otherwise, we have a relative timestamp (ex: ">= 2345678").
+		$allowed = [ '<', '<=', '=', '>', '>=' ];
+
+		if ( ! in_array( $matches[1], $allowed ) ) {
+			throw new Exception( 'Illegal timestamp query string: "' . $timestamp . '".' );
+		}
+
+		return 'timestamp ' . $matches[1] . ' "' . $matches[2] . '"';
 	}
 }

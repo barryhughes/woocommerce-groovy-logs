@@ -75,3 +75,17 @@ test( 'Invalid levels are rejected.', function() {
 test( 'Given a mix of valid and invalid levels, the query will be rejected.', function () {
 	get_sqlite_logger()->fetch( level: [ 'info', 'debug', 'tennis' ] );
 } )->expectException( Exception::class );
+
+test( 'Log entries before, after or exactly at a specific timestamp can be fetched.', function () {
+	$logger = get_sqlite_logger();
+	$time   = time();
+
+	$logger->handle( $time - 100, 'info',     'Another event.', [] );
+	$logger->handle( $time - 200, 'debug',    'An interesting detail.', [] );
+	$logger->handle( $time - 400, 'critical', 'Rather important.', [] );
+
+	$oldest_two = $logger->fetch( timestamp: '<=' . $time-200 );
+	expect( $oldest_two )->toHaveCount( 2 );
+	expect( $oldest_two[0]->timestamp )->toEqual( $time - 200 );
+	expect( $oldest_two[1]->timestamp )->toEqual( $time - 400 );
+} );
