@@ -130,7 +130,7 @@ test( 'Complex searches.', function () {
 	$gateau_search = $logger->fetch( level: [ 'info', 'warning' ], search: 'Black Forest Gateau' );
 	expect( $gateau_search )->toHaveCount( 2 );
 
-	$loafers_search = $logger->fetch( search: 'loafers', timestamp: '>=' . ( $time - 1400 ) );
+	$loafers_search = $logger->fetch( timestamp: '>=' . ( $time - 1400 ), search: 'loafers' );
 	expect( $loafers_search )->toHaveCount( 2 );
 	expect( $loafers_search[0]->timestamp )->toEqual( $time - 1300 );
 	expect( $loafers_search[1]->timestamp )->toEqual( $time - 1400 );

@@ -71,9 +71,9 @@ class SQLite_Logger implements WC_Log_Handler_Interface {
 		}
 
 		$insert->bindValue( ':timestamp', $timestamp, SQLITE3_INTEGER );
-		$insert->bindValue( ':level', $level, SQLITE3_INTEGER );
-		$insert->bindValue( ':message', $message, SQLITE3_TEXT );
-		$insert->bindValue( ':context', $context, SQLITE3_TEXT );
+		$insert->bindValue( ':level',     $level,     SQLITE3_INTEGER );
+		$insert->bindValue( ':message',   $message,   SQLITE3_TEXT );
+		$insert->bindValue( ':context',   $context,   SQLITE3_TEXT );
 
 		return $insert->execute() !== false;
 	}
@@ -144,7 +144,6 @@ class SQLite_Logger implements WC_Log_Handler_Interface {
 	}
 
 	/**
-	 * @todo implement more complex searches
 	 * @todo establish this method as part of a common interface
 	 *
 	 * @param int          $page
