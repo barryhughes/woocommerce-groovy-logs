@@ -113,3 +113,27 @@ test( 'Logs can be searched by keyword.', function () {
 	expect( $search_bar )->toHaveCount( 2 );
 } );
 
+test( 'Complex searches.', function () {
+	$logger = get_sqlite_logger();
+	$time   = time();
+
+	$logger->handle( $time - 2000, 'info', 'Black Forest Gateau', [] );
+	$logger->handle( $time - 1900, 'info', 'Burgundy loafers', [] );
+	$logger->handle( $time - 1800, 'error', 'Black Forest Gateau', [] );
+	$logger->handle( $time - 1700, 'warning', 'Black Forest Gateau', [] );
+
+	$logger->handle( $time - 1600, 'error', 'Black Forest Gateau', [] );
+	$logger->handle( $time - 1500, 'error', 'Burgundy loafers', [] );
+	$logger->handle( $time - 1400, 'error', 'Burgundy loafers', [] );
+	$logger->handle( $time - 1300, 'error', 'Burgundy loafers', [] );
+
+	$gateau_search = $logger->fetch( level: [ 'info', 'warning' ], search: 'Black Forest Gateau' );
+	expect( $gateau_search )->toHaveCount( 2 );
+
+	$loafers_search = $logger->fetch( search: 'loafers', timestamp: '>=' . ( $time - 1400 ) );
+	expect( $loafers_search )->toHaveCount( 2 );
+	expect( $loafers_search[0]->timestamp )->toEqual( $time - 1300 );
+	expect( $loafers_search[1]->timestamp )->toEqual( $time - 1400 );
+
+
+} );
