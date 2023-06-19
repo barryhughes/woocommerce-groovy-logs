@@ -252,6 +252,6 @@ class SQLite_Logger implements WC_Log_Handler_Interface {
 		}
 
 		$sanitized = SQLite3::escapeString( $term );
-		return "message LIKE '%$term%' OR context LIKE '%$term%'";	
+		return "message LIKE '%$sanitized%' OR context LIKE '%$sanitized%'";
 	}
 }
