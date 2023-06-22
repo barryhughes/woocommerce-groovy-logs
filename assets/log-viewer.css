@@ -1,0 +1,38 @@
+#groovy-logs-viewer {
+    margin: 1rem;
+}
+
+#groovy-logs-viewer section.search {
+    width: 100%;
+    text-align: center;
+}
+
+#groovy-logs-viewer section.search input {
+    width: 50%;
+    min-width: 20rem;
+    margin: 1rem auto;
+    padding: 0.5rem 0.7rem;
+    font-size: 140%;
+    text-align: center;
+}
+
+#groovy-logs-viewer table {
+    border-spacing: 0;
+}
+
+#groovy-logs-viewer table thead th {
+    background: #2271b1;
+    color: white;
+    font-weight: bold;
+    padding: 0.5rem;
+}
+
+#groovy-logs-viewer table tbody td {
+    padding: 0.5rem;
+    background: #fefefe;
+    border-bottom: 1px dotted #eee;
+}
+
+#groovy-logs-viewer table tbody tr:nth-child(odd) td {
+    background: #fcfcfc;
+}

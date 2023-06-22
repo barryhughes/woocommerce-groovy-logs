@@ -16,5 +16,4 @@ function plugin(): Plugin {
 }
 
 require __DIR__ . '/vendor/autoload.php';
-plugin()->setup();
-
+plugin()->setup( __FILE__ );
